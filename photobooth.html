@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Booth</title>
+    <style>
+        body {
+            background-color: #f5e1f5;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        video, canvas {
+            border: 5px solid #ffb6c1;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #ff77c2;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        button:hover {
+            background-color: #ff4ca3;
+        }
+        .gallery {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .gallery img {
+            width: 120px;
+            height: 150px;
+            border-radius: 10px;
+            border: 2px solid #ff77c2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Photo Booth</h1>
+    <video id="video" width="400" height="300" autoplay></video><br>
+    <button id="capture">Take Photo</button><br>
+    <canvas id="canvas" width="400" height="300"></canvas>
+    
+    <h2>Your Photo Strips</h2>
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const captureButton = document.getElementById('capture');
+        const gallery = document.getElementById('gallery');
+        let photoStrips = JSON.parse(localStorage.getItem('photoStrips')) || [];
+
+        // Access webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error("Error accessing webcam:", error);
+            });
+
+        // Capture photo and add to gallery
+        captureButton.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const photoData = canvas.toDataURL('image/png');
+            photoStrips.push(photoData);
+            localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
+            displayGallery();
+        });
+
+        // Display saved photo strips
+        function displayGallery() {
+            gallery.innerHTML = '';
+            photoStrips.forEach(photo => {
+                const img = document.createElement('img');
+                img.src = photo;
+                gallery.appendChild(img);
+            });
+        }
+
+        // Initial gallery display
+        displayGallery();
+    </script>
+    
+</body>
+</html>

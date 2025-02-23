@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Booth</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
     <style>
         body {
             background-color: #f5e1f5;
@@ -33,7 +34,7 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .gallery img {
+        .gallery img, .gallery video {
             width: 120px;
             height: 150px;
             border-radius: 10px;
@@ -53,7 +54,7 @@
     <h1>Photo Booth</h1>
     <video id="video" width="400" height="300" autoplay></video><br>
     <p id="countdown"></p>
-    <button id="capture">Take Photo</button><br>
+    <button id="capture">Take GIF</button><br>
     <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
     
     <h2>Your Photo Strips</h2>
@@ -77,48 +78,10 @@
                 console.error("Error accessing webcam:", error);
             });
 
-        // Function to start the countdown and take the photo
+        // Function to start countdown and capture GIF
         function startCountdown() {
             let timeLeft = 3;
             countdownElement.innerText = timeLeft; // Show "3"
 
             const countdownInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    countdownElement.innerText = timeLeft; // Update countdown
-                } else {
-                    clearInterval(countdownInterval);
-                    countdownElement.innerText = ""; // Hide countdown
-                    takePhoto(); // Take the picture
-                }
-            }, 1000);
-        }
-
-        // Capture photo and add to gallery
-        function takePhoto() {
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const photoData = canvas.toDataURL('image/png');
-            photoStrips.push(photoData);
-            localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
-            displayGallery();
-        }
-
-        // Display saved photo strips
-        function displayGallery() {
-            gallery.innerHTML = '';
-            photoStrips.forEach(photo => {
-                const img = document.createElement('img');
-                img.src = photo;
-                gallery.appendChild(img);
-            });
-        }
-
-        // Event listener for the capture button
-        captureButton.addEventListener('click', startCountdown);
-
-        // Initial gallery display
-        displayGallery();
-    </script>
-    
-</body>
-</html>
+                ti

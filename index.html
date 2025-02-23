@@ -45,7 +45,7 @@
             font-weight: bold;
             color: #ff4ca3;
             margin-bottom: 10px;
-            height: 30px; /* To prevent layout shift */
+            height: 30px; /* Prevents layout shift */
         }
     </style>
 </head>
@@ -63,7 +63,6 @@
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
         const captureButton = document.getElementById('capture');
         const countdownElement = document.getElementById('countdown');
         const gallery = document.getElementById('gallery');
@@ -78,10 +77,61 @@
                 console.error("Error accessing webcam:", error);
             });
 
-        // Function to start countdown and capture GIF
+        // Function to start countdown before capturing GIF
         function startCountdown() {
             let timeLeft = 3;
             countdownElement.innerText = timeLeft; // Show "3"
 
             const countdownInterval = setInterval(() => {
-                ti
+                timeLeft--;
+                if (timeLeft > 0) {
+                    countdownElement.innerText = timeLeft; // Update countdown
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownElement.innerText = "Capturing...";
+                    captureGIF(); // Take GIF
+                }
+            }, 1000);
+        }
+
+        // Capture GIF
+        function captureGIF() {
+            gifshot.createGIF({
+                video: [video],
+                gifWidth: 400,
+                gifHeight: 300,
+                interval: 0.2, // Capture every 0.2 seconds
+                numFrames: 15, // 15 frames in 3 seconds
+                progressCallback: function(progress) {
+                    countdownElement.innerText = `Creating GIF... ${Math.round(progress * 100)}%`;
+                }
+            }, function(obj) {
+                if (!obj.error) {
+                    const gifData = obj.image;
+                    photoStrips.push(gifData);
+                    localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
+                    displayGallery();
+                }
+                countdownElement.innerText = "";
+            });
+        }
+
+        // Display saved photo strips
+        function displayGallery() {
+            gallery.innerHTML = '';
+            photoStrips.forEach(photo => {
+                const img = document.createElement('img');
+                img.src = photo;
+                gallery.appendChild(img);
+            });
+        }
+
+        // Event listener for the capture button
+        captureButton.addEventListener('click', startCountdown);
+
+        // Initial gallery display
+        displayGallery();
+    </script>
+    
+</body>
+</html>

@@ -50,9 +50,11 @@
             margin-right: auto;
             position: relative;
             padding-bottom: 30px;
+            max-width: 100%;
+            max-height: 100%;
         }
         .photo-strip img {
-            max-width: 100%;
+            width: 100%;
             height: auto;
             border-radius: 5px;
             border: 2px solid #ff77c2;
@@ -70,12 +72,12 @@
         @media (max-width: 600px) {
             .photo-strip {
                 width: 90%;
+                max-width: 90%;
                 padding-bottom: 40px;
             }
             .photo-strip img {
-                max-width: 100%;
+                width: 100%;
                 height: auto;
-                max-height: 200px;
             }
         }
     </style>

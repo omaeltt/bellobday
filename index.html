@@ -151,14 +151,18 @@
             let taken = 0;
             let interval = setInterval(() => {
                 if (taken < numPhotos) {
-                    capturePhoto();
-                    taken++;
+                    countdownElement.innerText = 'Capturing...';
+                    setTimeout(() => {
+                        capturePhoto();
+                        countdownElement.innerText = 3;
+                        taken++;
+                    }, 1000);
                 } else {
                     clearInterval(interval);
                     countdownElement.innerText = "";
                     downloadButton.style.display = "inline-block";
                 }
-            }, 3000);
+            }, 4000); // 4-second interval for each photo
         }
 
         function capturePhoto() {

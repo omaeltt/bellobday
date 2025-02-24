@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Booth</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             background-color: #f5e1f5;
@@ -30,46 +30,30 @@
         button:hover {
             background-color: #ff4ca3;
         }
-        .gallery {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .photo-container {
-            position: relative;
-            display: inline-block;
-        }
-        .photo-container img {
-            width: 120px;
-            height: 150px;
-            border-radius: 10px;
-            border: 2px solid #ff77c2;
-        }
-        .delete-btn, .download-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: red;
-            color: white;
-            border: none;
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-        }
-        .download-btn {
-            top: auto;
-            bottom: 5px;
-            background: green;
-        }
         #countdown {
-            font-size: 24px;
+            font-size: 50px;
             font-weight: bold;
             color: #ff4ca3;
-            margin-bottom: 10px;
-            height: 30px;
+        }
+        .photo-strip {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border: 5px solid #ff77c2;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 150px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .photo-strip img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 2px solid #ff77c2;
         }
     </style>
 </head>
@@ -77,18 +61,19 @@
     <h1>Photo Booth</h1>
     <video id="video" width="400" height="300" autoplay playsinline></video><br>
     <p id="countdown"></p>
-    <button id="capture">Take GIF</button>
-    <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+    <button id="capture">Take Photo Strip</button>
+    <button id="download" style="display:none;">Download Strip</button>
     
-    <h2>Your Photo Strips</h2>
-    <div class="gallery" id="gallery"></div>
-
+    <h2>Your Photo Strip</h2>
+    <div id="photo-strip" class="photo-strip"></div>
+    
     <script>
         const video = document.getElementById('video');
         const captureButton = document.getElementById('capture');
+        const downloadButton = document.getElementById('download');
         const countdownElement = document.getElementById('countdown');
-        const gallery = document.getElementById('gallery');
-        let photoStrips = JSON.parse(localStorage.getItem('photoStrips')) || [];
+        const photoStrip = document.getElementById('photo-strip');
+        let photos = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
             .then(stream => {
@@ -100,91 +85,68 @@
             });
 
         function startCountdown() {
-            let timeLeft = 3;
-            countdownElement.innerText = timeLeft;
+            let count = 3;
+            countdownElement.innerText = count;
             captureButton.disabled = true;
-            
-            const countdownInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    countdownElement.innerText = timeLeft;
+            photos = [];
+            photoStrip.innerHTML = '';
+            let interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownElement.innerText = count;
                 } else {
-                    clearInterval(countdownInterval);
+                    clearInterval(interval);
                     countdownElement.innerText = "Capturing...";
-                    captureGIF();
+                    takePhotos(3);
                 }
             }, 1000);
         }
 
-        function captureGIF() {
-            gifshot.createGIF({
-                video: [video],
-                gifWidth: 400,
-                gifHeight: 300,
-                interval: 0.2,
-                numFrames: 15,
-                progressCallback: function(progress) {
-                    countdownElement.innerText = `Creating GIF... ${Math.round(progress * 100)}%`;
+        function takePhotos(numPhotos) {
+            let taken = 0;
+            let interval = setInterval(() => {
+                if (taken < numPhotos) {
+                    capturePhoto();
+                    taken++;
+                } else {
+                    clearInterval(interval);
+                    countdownElement.innerText = "";
+                    downloadButton.style.display = "inline-block";
                 }
-            }, function(obj) {
-                if (!obj.error) {
-                    const gifData = obj.image;
-                    try {
-                        photoStrips.push(gifData);
-                        localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
-                        displayGallery();
-                    } catch (e) {
-                        alert("Storage full! Please delete some GIFs.");
-                    }
-                }
-                countdownElement.innerText = "";
-                captureButton.disabled = false;
-            });
+            }, 3000);
         }
 
-        function displayGallery() {
-            gallery.innerHTML = '';
-            photoStrips.forEach((photo, index) => {
-                const container = document.createElement('div');
-                container.classList.add('photo-container');
-                
+        function capturePhoto() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = canvas.toDataURL('image/png');
+            photos.push(imgData);
+            displayPhotos();
+        }
+
+        function displayPhotos() {
+            photoStrip.innerHTML = '';
+            photos.forEach(photo => {
                 const img = document.createElement('img');
                 img.src = photo;
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerText = '✖';
-                deleteBtn.classList.add('delete-btn');
-                deleteBtn.onclick = () => deleteGIF(index);
-                
-                const downloadBtn = document.createElement('button');
-                downloadBtn.innerText = '↓';
-                downloadBtn.classList.add('download-btn');
-                downloadBtn.onclick = () => downloadGIF(photo);
-                
-                container.appendChild(img);
-                container.appendChild(deleteBtn);
-                container.appendChild(downloadBtn);
-                gallery.appendChild(container);
+                photoStrip.appendChild(img);
             });
         }
 
-        function deleteGIF(index) {
-            photoStrips.splice(index, 1);
-            localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
-            displayGallery();
-        }
-
-        function downloadGIF(photo) {
-            const link = document.createElement('a');
-            link.href = photo;
-            link.download = 'photo_booth.gif';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function downloadPhotoStrip() {
+            html2canvas(photoStrip).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'photo_strip.png';
+                link.click();
+            });
         }
 
         captureButton.addEventListener('click', startCountdown);
-        displayGallery();
+        downloadButton.addEventListener('click', downloadPhotoStrip);
     </script>
 </body>
 </html>

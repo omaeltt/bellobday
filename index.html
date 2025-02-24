@@ -69,6 +69,9 @@
             color: #ff77c2;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
+        .color-picker {
+            margin-top: 10px;
+        }
         @media (max-width: 600px) {
             .photo-strip {
                 width: 90%;
@@ -86,8 +89,20 @@
     <h1>Photo Booth</h1>
     <video id="video" width="400" height="300" autoplay playsinline></video><br>
     <p id="countdown"></p>
+
+    <!-- Input for Custom Text -->
     <label for="custom-text">Enter your custom message for the strip:</label><br>
     <input type="text" id="custom-text" placeholder="Type your message here..."><br><br>
+
+    <!-- Color Pickers for Customizing the Strip -->
+    <div class="color-picker">
+        <label for="background-color">Choose background color:</label>
+        <input type="color" id="background-color" value="#ffffff"><br><br>
+        <label for="border-color">Choose border color:</label>
+        <input type="color" id="border-color" value="#ff77c2">
+    </div>
+
+    <br><br>
     <button id="capture">Take Photo Strip</button>
     <button id="download" style="display:none;">Download Strip</button>
     
@@ -104,6 +119,8 @@
         const photoStrip = document.getElementById('photo-strip');
         const customTextInput = document.getElementById('custom-text');
         const stripText = document.getElementById('strip-text');
+        const backgroundColorInput = document.getElementById('background-color');
+        const borderColorInput = document.getElementById('border-color');
         let photos = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -115,12 +132,21 @@
                 alert("Camera access denied or unavailable. Please check permissions and try again.");
             });
 
+        function updateStripColors() {
+            const backgroundColor = backgroundColorInput.value;
+            const borderColor = borderColorInput.value;
+            photoStrip.style.backgroundColor = backgroundColor;
+            photoStrip.style.borderColor = borderColor;
+            stripText.style.color = borderColor;  // Text color same as border
+        }
+
         function startCountdown() {
             let count = 3;
             countdownElement.innerText = count;
             captureButton.disabled = true;
             photos = [];
             photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
+            updateStripColors(); // Apply colors at the start
             let interval = setInterval(() => {
                 count--;
                 if (count > 0) {
@@ -164,6 +190,7 @@
 
         function displayPhotos() {
             photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
+            updateStripColors();
             photos.forEach(photo => {
                 const img = document.createElement('img');
                 img.src = photo;
@@ -172,11 +199,11 @@
         }
 
         function downloadPhotoStrip() {
-            // Ensure that stickers are properly rendered before capturing the strip
+            // Ensure that colors and the strip are rendered correctly before capturing the image
             html2canvas(photoStrip, {
                 scale: 2, // Use a higher scale to avoid blurriness
                 logging: true,
-                useCORS: true, // Enable cross-origin requests for external resources like stickers
+                useCORS: true, // Enable cross-origin requests for external resources
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');

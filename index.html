@@ -45,11 +45,11 @@
             border: 5px solid #ff77c2;
             border-radius: 10px;
             margin-top: 20px;
-            width: 150px;
+            width: 200px;
             margin-left: auto;
             margin-right: auto;
             position: relative;
-            padding-bottom: 30px;  /* Add space at the bottom for the text */
+            padding-bottom: 30px;
         }
         .photo-strip img {
             max-width: 100%;
@@ -70,8 +70,11 @@
         @media (max-width: 600px) {
             .photo-strip {
                 width: 90%;
+                padding-bottom: 40px;
             }
             .photo-strip img {
+                max-width: 100%;
+                height: auto;
                 max-height: 200px;
             }
         }
@@ -81,12 +84,14 @@
     <h1>Photo Booth</h1>
     <video id="video" width="400" height="300" autoplay playsinline></video><br>
     <p id="countdown"></p>
+    <label for="custom-text">Enter your custom message for the strip:</label><br>
+    <input type="text" id="custom-text" placeholder="Type your message here..."><br><br>
     <button id="capture">Take Photo Strip</button>
     <button id="download" style="display:none;">Download Strip</button>
     
     <h2>Your Photo Strip</h2>
     <div id="photo-strip" class="photo-strip">
-        <div class="birthday-text">Meg's Bday!! 28.02.2004</div>
+        <div class="birthday-text" id="strip-text">Meg's Bday!!</div>
     </div>
     
     <script>
@@ -95,6 +100,8 @@
         const downloadButton = document.getElementById('download');
         const countdownElement = document.getElementById('countdown');
         const photoStrip = document.getElementById('photo-strip');
+        const customTextInput = document.getElementById('custom-text');
+        const stripText = document.getElementById('strip-text');
         let photos = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -111,7 +118,7 @@
             countdownElement.innerText = count;
             captureButton.disabled = true;
             photos = [];
-            photoStrip.innerHTML = '<div class="birthday-text">Meg\'s Bday!!</div>';
+            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
             let interval = setInterval(() => {
                 count--;
                 if (count > 0) {
@@ -150,7 +157,7 @@
         }
 
         function displayPhotos() {
-            photoStrip.innerHTML = '<div class="birthday-text">Meg\'s Bday!!</div>';
+            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
             photos.forEach(photo => {
                 const img = document.createElement('img');
                 img.src = photo;

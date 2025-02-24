@@ -168,7 +168,7 @@
         }
 
         function downloadPhotoStrip() {
-            html2canvas(photoStrip).then(canvas => {
+            html2canvas(photoStrip, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');
                 link.download = 'photo_strip.png';

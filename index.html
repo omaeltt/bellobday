@@ -69,6 +69,13 @@
             color: #ff77c2;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
+        .sticker {
+            position: absolute;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            z-index: 10;
+        }
         @media (max-width: 600px) {
             .photo-strip {
                 width: 90%;
@@ -95,7 +102,11 @@
     <div id="photo-strip" class="photo-strip">
         <div class="birthday-text" id="strip-text">Meg's Bday!!</div>
     </div>
-    
+
+    <h3>Choose a Sticker:</h3>
+    <input type="file" id="sticker-upload" accept="image/*"><br>
+    <button id="add-sticker">Add Sticker</button>
+
     <script>
         const video = document.getElementById('video');
         const captureButton = document.getElementById('capture');
@@ -104,7 +115,10 @@
         const photoStrip = document.getElementById('photo-strip');
         const customTextInput = document.getElementById('custom-text');
         const stripText = document.getElementById('strip-text');
+        const stickerUpload = document.getElementById('sticker-upload');
+        const addStickerButton = document.getElementById('add-sticker');
         let photos = [];
+        let stickers = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
             .then(stream => {
@@ -165,16 +179,67 @@
                 img.src = photo;
                 photoStrip.appendChild(img);
             });
+            stickers.forEach(sticker => {
+                const img = document.createElement('img');
+                img.src = sticker.src;
+                img.classList.add('sticker');
+                img.style.left = sticker.left + 'px';
+                img.style.top = sticker.top + 'px';
+                img.addEventListener('mousedown', startStickerDrag);
+                photoStrip.appendChild(img);
+            });
         }
 
         function downloadPhotoStrip() {
-            html2canvas(photoStrip, { scale: 2 }).then(canvas => {
+            html2canvas(photoStrip, {
+                scale: 4,
+                width: photoStrip.offsetWidth,
+                height: photoStrip.offsetHeight,
+                x: photoStrip.offsetLeft,
+                y: photoStrip.offsetTop
+            }).then(canvas => {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');
                 link.download = 'photo_strip.png';
                 link.click();
             });
         }
+
+        function startStickerDrag(e) {
+            const sticker = e.target;
+            const offsetX = e.clientX - sticker.offsetLeft;
+            const offsetY = e.clientY - sticker.offsetTop;
+
+            function dragSticker(e) {
+                sticker.style.left = e.clientX - offsetX + 'px';
+                sticker.style.top = e.clientY - offsetY + 'px';
+            }
+
+            function stopStickerDrag() {
+                document.removeEventListener('mousemove', dragSticker);
+                document.removeEventListener('mouseup', stopStickerDrag);
+            }
+
+            document.addEventListener('mousemove', dragSticker);
+            document.addEventListener('mouseup', stopStickerDrag);
+        }
+
+        addStickerButton.addEventListener('click', () => {
+            const file = stickerUpload.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const sticker = new Image();
+                    sticker.src = e.target.result;
+                    sticker.onload = function () {
+                        const stickerObject = { src: sticker.src, left: 50, top: 50 }; // Default position
+                        stickers.push(stickerObject);
+                        displayPhotos();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         captureButton.addEventListener('click', startCountdown);
         downloadButton.addEventListener('click', downloadPhotoStrip);

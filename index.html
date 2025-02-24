@@ -70,7 +70,7 @@
 </head>
 <body>
     <h1>Photo Booth</h1>
-    <video id="video" width="400" height="300" autoplay></video><br>
+    <video id="video" width="400" height="300" autoplay playsinline></video><br>
     <p id="countdown"></p>
     <button id="capture">Take GIF</button>
     <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
@@ -85,12 +85,13 @@
         const gallery = document.getElementById('gallery');
         let photoStrips = JSON.parse(localStorage.getItem('photoStrips')) || [];
 
-        navigator.mediaDevices.getUserMedia({ video: true })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
             .then(stream => {
                 video.srcObject = stream;
             })
             .catch(error => {
                 console.error("Error accessing webcam:", error);
+                alert("Camera access denied or unavailable. Please check permissions and try again.");
             });
 
         function startCountdown() {
@@ -150,19 +151,8 @@
                 deleteBtn.classList.add('delete-btn');
                 deleteBtn.onclick = () => deleteGIF(index);
                 
-                const downloadBtn = document.createElement('a');
-                downloadBtn.href = photo;
-                downloadBtn.download = `photo_strip_${index + 1}.gif`;
-                downloadBtn.innerHTML = '⬇';
-                downloadBtn.style.fontSize = '14px';
-                downloadBtn.style.display = 'block';
-                downloadBtn.style.textAlign = 'center';
-                downloadBtn.style.marginTop = '5px';
-                downloadBtn.style.textDecoration = 'none';
-                
                 container.appendChild(img);
                 container.appendChild(deleteBtn);
-                container.appendChild(downloadBtn);
                 gallery.appendChild(container);
             });
         }

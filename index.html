@@ -46,7 +46,7 @@
             border-radius: 10px;
             border: 2px solid #ff77c2;
         }
-        .delete-btn {
+        .delete-btn, .download-btn {
             position: absolute;
             top: 5px;
             right: 5px;
@@ -58,6 +58,11 @@
             border-radius: 50%;
             width: 20px;
             height: 20px;
+        }
+        .download-btn {
+            top: auto;
+            bottom: 5px;
+            background: green;
         }
         #countdown {
             font-size: 24px;
@@ -151,8 +156,14 @@
                 deleteBtn.classList.add('delete-btn');
                 deleteBtn.onclick = () => deleteGIF(index);
                 
+                const downloadBtn = document.createElement('button');
+                downloadBtn.innerText = '↓';
+                downloadBtn.classList.add('download-btn');
+                downloadBtn.onclick = () => downloadGIF(photo);
+                
                 container.appendChild(img);
                 container.appendChild(deleteBtn);
+                container.appendChild(downloadBtn);
                 gallery.appendChild(container);
             });
         }
@@ -161,6 +172,15 @@
             photoStrips.splice(index, 1);
             localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
             displayGallery();
+        }
+
+        function downloadGIF(photo) {
+            const link = document.createElement('a');
+            link.href = photo;
+            link.download = 'photo_booth.gif';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         captureButton.addEventListener('click', startCountdown);

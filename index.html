@@ -15,6 +15,7 @@
         video, canvas {
             border: 5px solid #ffb6c1;
             margin-bottom: 10px;
+            max-width: 100%;
         }
         button {
             background-color: #ff77c2;
@@ -24,6 +25,7 @@
             padding: 10px 20px;
             cursor: pointer;
             border-radius: 10px;
+            margin: 5px;
         }
         button:hover {
             background-color: #ff4ca3;
@@ -34,27 +36,43 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .gallery img, .gallery video {
+        .photo-container {
+            position: relative;
+            display: inline-block;
+        }
+        .photo-container img {
             width: 120px;
             height: 150px;
             border-radius: 10px;
             border: 2px solid #ff77c2;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
         }
         #countdown {
             font-size: 24px;
             font-weight: bold;
             color: #ff4ca3;
             margin-bottom: 10px;
-            height: 30px; /* Prevents layout shift */
+            height: 30px;
         }
     </style>
 </head>
 <body>
-
     <h1>Photo Booth</h1>
     <video id="video" width="400" height="300" autoplay></video><br>
     <p id="countdown"></p>
-    <button id="capture">Take GIF</button><br>
+    <button id="capture">Take GIF</button>
     <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
     
     <h2>Your Photo Strips</h2>
@@ -62,13 +80,11 @@
 
     <script>
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('capture');
         const countdownElement = document.getElementById('countdown');
         const gallery = document.getElementById('gallery');
         let photoStrips = JSON.parse(localStorage.getItem('photoStrips')) || [];
 
-        // Access webcam
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
@@ -77,61 +93,88 @@
                 console.error("Error accessing webcam:", error);
             });
 
-        // Function to start countdown before capturing GIF
         function startCountdown() {
             let timeLeft = 3;
-            countdownElement.innerText = timeLeft; // Show "3"
-
+            countdownElement.innerText = timeLeft;
+            captureButton.disabled = true;
+            
             const countdownInterval = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
-                    countdownElement.innerText = timeLeft; // Update countdown
+                    countdownElement.innerText = timeLeft;
                 } else {
                     clearInterval(countdownInterval);
                     countdownElement.innerText = "Capturing...";
-                    captureGIF(); // Take GIF
+                    captureGIF();
                 }
             }, 1000);
         }
 
-        // Capture GIF
         function captureGIF() {
             gifshot.createGIF({
                 video: [video],
                 gifWidth: 400,
                 gifHeight: 300,
-                interval: 0.2, // Capture every 0.2 seconds
-                numFrames: 15, // 15 frames in 3 seconds
+                interval: 0.2,
+                numFrames: 15,
                 progressCallback: function(progress) {
                     countdownElement.innerText = `Creating GIF... ${Math.round(progress * 100)}%`;
                 }
             }, function(obj) {
                 if (!obj.error) {
                     const gifData = obj.image;
-                    photoStrips.push(gifData);
-                    localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
-                    displayGallery();
+                    try {
+                        photoStrips.push(gifData);
+                        localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
+                        displayGallery();
+                    } catch (e) {
+                        alert("Storage full! Please delete some GIFs.");
+                    }
                 }
                 countdownElement.innerText = "";
+                captureButton.disabled = false;
             });
         }
 
-        // Display saved photo strips
         function displayGallery() {
             gallery.innerHTML = '';
-            photoStrips.forEach(photo => {
+            photoStrips.forEach((photo, index) => {
+                const container = document.createElement('div');
+                container.classList.add('photo-container');
+                
                 const img = document.createElement('img');
                 img.src = photo;
-                gallery.appendChild(img);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerText = '✖';
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.onclick = () => deleteGIF(index);
+                
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = photo;
+                downloadBtn.download = `photo_strip_${index + 1}.gif`;
+                downloadBtn.innerHTML = '⬇';
+                downloadBtn.style.fontSize = '14px';
+                downloadBtn.style.display = 'block';
+                downloadBtn.style.textAlign = 'center';
+                downloadBtn.style.marginTop = '5px';
+                downloadBtn.style.textDecoration = 'none';
+                
+                container.appendChild(img);
+                container.appendChild(deleteBtn);
+                container.appendChild(downloadBtn);
+                gallery.appendChild(container);
             });
         }
 
-        // Event listener for the capture button
-        captureButton.addEventListener('click', startCountdown);
+        function deleteGIF(index) {
+            photoStrips.splice(index, 1);
+            localStorage.setItem('photoStrips', JSON.stringify(photoStrips));
+            displayGallery();
+        }
 
-        // Initial gallery display
+        captureButton.addEventListener('click', startCountdown);
         displayGallery();
     </script>
-    
 </body>
 </html>

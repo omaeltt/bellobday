@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>for megan <3</title>
+    <title>Photo Booth</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
@@ -13,7 +13,7 @@
             padding: 20px;
         }
         video, canvas {
-            border: 5px solid #ffb6c1;
+            border: 5px solid #f397c0;
             margin-bottom: 10px;
             max-width: 100%;
         }
@@ -42,7 +42,7 @@
             gap: 10px;
             padding: 10px;
             background: white;
-            border: 5px solid #ff77c2;
+            border: 5px solid #ffffff;
             border-radius: 10px;
             margin-top: 20px;
             width: 200px;
@@ -57,16 +57,16 @@
             width: 100%;
             height: auto;
             border-radius: 5px;
-            border: 2px solid #ff77c2;
+            border: 2px solid #e1d8dd; /* Default border color */
         }
         .birthday-text {
             position: absolute;
             bottom: 5px;
             width: 100%;
             text-align: center;
-            font-size: 20px;
+            font-size: auto;
             font-weight: bold;
-            color: #ff77c2;
+            color: hsl(327, 81%, 75%);
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
         .color-picker {
@@ -101,7 +101,9 @@
         <label for="border-color">Choose border color:</label>
         <input type="color" id="border-color" value="#ff77c2"><br><br>
         <label for="text-color">Choose text color:</label>
-        <input type="color" id="text-color" value="#ff77c2">
+        <input type="color" id="text-color" value="#ff77c2"><br><br>
+        <label for="photo-border-color">Choose photo border color:</label>
+        <input type="color" id="photo-border-color" value="#ff77c2">
     </div>
 
     <br><br>
@@ -111,7 +113,7 @@
     
     <h2>Your Photo Strip</h2>
     <div id="photo-strip" class="photo-strip">
-        <div class="birthday-text" id="strip-text">Meg's Bday!!</div>
+        <div class="birthday-text" id="strip-text">happy birthday megan ^_^</div>
     </div>
 
     <script>
@@ -126,6 +128,7 @@
         const backgroundColorInput = document.getElementById('background-color');
         const borderColorInput = document.getElementById('border-color');
         const textColorInput = document.getElementById('text-color');
+        const photoBorderColorInput = document.getElementById('photo-border-color');
         let photos = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -141,17 +144,32 @@
             const backgroundColor = backgroundColorInput.value;
             const borderColor = borderColorInput.value;
             const textColor = textColorInput.value;
+            const photoBorderColor = photoBorderColorInput.value;
+
+            // Apply color changes to the strip
             photoStrip.style.backgroundColor = backgroundColor;
             photoStrip.style.borderColor = borderColor;
             stripText.style.color = textColor;  // Custom Text Color
+
+            // Apply border color to all photos
+            const photosOnStrip = photoStrip.querySelectorAll('img');
+            photosOnStrip.forEach(photo => {
+                photo.style.borderColor = photoBorderColor;
+            });
         }
+
+        // Event listeners to apply color changes live
+        backgroundColorInput.addEventListener('input', updateStripColors);
+        borderColorInput.addEventListener('input', updateStripColors);
+        textColorInput.addEventListener('input', updateStripColors);
+        photoBorderColorInput.addEventListener('input', updateStripColors);
 
         function startCountdown() {
             let count = 3;
             countdownElement.innerText = count;
             captureButton.disabled = true;
             photos = [];
-            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
+            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value ||  'happy birthday megan ^_^'}</div>`;
             updateStripColors(); // Apply colors at the start
             let interval = setInterval(() => {
                 count--;
@@ -196,7 +214,7 @@
         }
 
         function displayPhotos() {
-            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
+            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'happy birthday megan ^_^'}</div>`;
             updateStripColors();
             photos.forEach(photo => {
                 const img = document.createElement('img');

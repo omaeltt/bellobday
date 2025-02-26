@@ -107,6 +107,7 @@
     <br><br>
     <button id="capture">Take Photo Strip</button>
     <button id="download" style="display:none;">Download Strip</button>
+    <button id="retake" style="display:none;">Retake Photos</button>
     
     <h2>Your Photo Strip</h2>
     <div id="photo-strip" class="photo-strip">
@@ -117,6 +118,7 @@
         const video = document.getElementById('video');
         const captureButton = document.getElementById('capture');
         const downloadButton = document.getElementById('download');
+        const retakeButton = document.getElementById('retake');
         const countdownElement = document.getElementById('countdown');
         const photoStrip = document.getElementById('photo-strip');
         const customTextInput = document.getElementById('custom-text');
@@ -177,6 +179,7 @@
                     clearInterval(interval);
                     countdownElement.innerText = "";
                     downloadButton.style.display = "inline-block";
+                    retakeButton.style.display = "inline-block";
                 }
             }, 4000); // 4-second interval for each photo
         }
@@ -216,8 +219,19 @@
             });
         }
 
+        function resetPhotoStrip() {
+            photos = [];
+            countdownElement.innerText = "";
+            photoStrip.innerHTML = `<div class="birthday-text" id="strip-text">${customTextInput.value || 'Meg\'s Bday!!'}</div>`;
+            updateStripColors();
+            downloadButton.style.display = "none";
+            retakeButton.style.display = "none";
+            captureButton.disabled = false;
+        }
+
         captureButton.addEventListener('click', startCountdown);
         downloadButton.addEventListener('click', downloadPhotoStrip);
+        retakeButton.addEventListener('click', resetPhotoStrip);
     </script>
 </body>
 </html>

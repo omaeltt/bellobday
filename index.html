@@ -132,7 +132,6 @@
         const backgroundColorInput = document.getElementById('background-color');
         const borderColorInput = document.getElementById('border-color');
         const textColorInput = document.getElementById('text-color');
-        const photoBorderColorInput = document.getElementById('photo-border-color');
         let photos = [];
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -148,25 +147,12 @@
             const backgroundColor = backgroundColorInput.value;
             const borderColor = borderColorInput.value;
             const textColor = textColorInput.value;
-            const photoBorderColor = photoBorderColorInput.value;
 
             // Apply color changes to the strip
             photoStrip.style.backgroundColor = backgroundColor;
             photoStrip.style.borderColor = borderColor;
             stripText.style.color = textColor;  // Custom Text Color
-
-            // Apply border color to all photos
-            const photosOnStrip = photoStrip.querySelectorAll('img');
-            photosOnStrip.forEach(photo => {
-                photo.style.borderColor = photoBorderColor;
-            });
         }
-
-        // Event listeners to apply color changes live
-        backgroundColorInput.addEventListener('input', updateStripColors);
-        borderColorInput.addEventListener('input', updateStripColors);
-        textColorInput.addEventListener('input', updateStripColors);
-        photoBorderColorInput.addEventListener('input', updateStripColors);
 
         function startCountdown() {
             let count = 3;
